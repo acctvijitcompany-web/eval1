@@ -1,43 +1,49 @@
-/** =========================
- * ตั้งค่าเบื้องต้น
- * ======================= */
-const SPREADSHEET_NAME = 'แบบประเมินการทำงานของพนักงาน (Responses)'; // ชื่อไฟล์ใน Google Drive
-const SHEET_NAME = 'Responses'; // ชื่อชีตด้านในไฟล์
+/***********************
+ * CONFIG
+ ***********************/
+const EVAL_SPREADSHEET_ID = '1sTkczKwDbeEP_0COWU13YpJRlVJZ5dVo83QIkN91XYw'; // ID สเปรดชีต Responses
+const EVAL_SHEET_NAME     = 'Responses';
 
-/**
- * คืนค่า sheet สำหรับบันทึกข้อมูล
- * - ถ้ายังไม่มีไฟล์ จะสร้างใหม่ให้
- * - เก็บ ID ไฟล์ไว้ใน Script Properties ครั้งต่อไปจะเปิดจาก ID เดิม
- */
-function getResponseSheet() {
-  const props = PropertiesService.getScriptProperties();
-  let sheetId = props.getProperty('RESP_SHEET_ID');
+/***********************
+ * ENTRY (หน้าแบบประเมิน)
+ ***********************/
+function doGet(e) {
+  // ป้องกันกรณีรันจาก Editor แล้วไม่มี e ส่งมา
+  e = e || {};
+  e.parameter = e.parameter || {};
+
+  var t = HtmlService.createTemplateFromFile('evaluation');
+
+  t.evalId  = e.parameter.evalId  || '';
+  t.eventId = e.parameter.eventId || '';
+  t.docId   = e.parameter.docId   || '';
+
+  return t
+    .evaluate()
+    .setTitle('แบบประเมินการทำงานของพนักงาน')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+/***********************
+ * INTERNAL – เปิดสเปรดชีต + ชีต Responses
+ ***********************/
+function getEvalSheet_() {
   let ss;
-
-  if (sheetId) {
-    // ถ้ามี ID แล้ว ลองเปิดไฟล์
-    try {
-      ss = SpreadsheetApp.openById(sheetId);
-    } catch (e) {
-      // ถ้าเปิดไม่ได้ (ลบไฟล์ไปแล้ว ฯลฯ) ให้สร้างใหม่
-      ss = SpreadsheetApp.create(SPREADSHEET_NAME);
-      props.setProperty('RESP_SHEET_ID', ss.getId());
-    }
-  } else {
-    // ยังไม่เคยมีไฟล์มาก่อน → สร้างใหม่
-    ss = SpreadsheetApp.create(SPREADSHEET_NAME);
-    props.setProperty('RESP_SHEET_ID', ss.getId());
+  try {
+    ss = SpreadsheetApp.openById(EVAL_SPREADSHEET_ID);
+  } catch (err) {
+    Logger.log('openById error: ' + err);
+    throw new Error(
+      'ไม่สามารถเปิดไฟล์สเปรดชีตแบบประเมินได้\n' +
+      'กรุณาตรวจสอบว่า:\n' +
+      '1) ใช้ Spreadsheet ID ถูกต้อง\n' +
+      '2) บัญชีที่รัน Apps Script มีสิทธิ์เข้าถึงไฟล์นั้น'
+    );
   }
 
-  // หา/สร้างชีตสำหรับเก็บข้อมูล
-  let sheet = ss.getSheetByName(SHEET_NAME);
+  let sheet = ss.getSheetByName(EVAL_SHEET_NAME);
   if (!sheet) {
-    sheet = ss.getSheets()[0];
-    sheet.setName(SHEET_NAME);
-  }
-
-  // ถ้ายังไม่มีหัวตาราง ให้สร้างหัวตารางรอบแรก
-  if (sheet.getLastRow() === 0) {
+    sheet = ss.insertSheet(EVAL_SHEET_NAME);
     sheet.appendRow([
       'Timestamp',
       'ความตรงต่อเวลา',
@@ -45,42 +51,78 @@ function getResponseSheet() {
       'มารยาทและการสื่อสาร',
       'ความรวดเร็วและความพร้อม',
       'ความพึงพอใจโดยรวม',
-      'ข้อเสนอแนะเพิ่มเติม'
+      'ข้อเสนอแนะเพิ่มเติม',
+      'EvalId',
+      'EventId',
+      'DocId'
     ]);
   }
-
   return sheet;
 }
 
-/**
- * หน้าเว็บฟอร์ม
- */
-function doGet() {
-  return HtmlService.createHtmlOutputFromFile('Index')
-    .setTitle('แบบประเมินการทำงานของพนักงาน');
+/***********************
+ * SAVE EVALUATION
+ ***********************/
+function saveEvaluation(data) {
+  const sheet = getEvalSheet_();
+
+  sheet.appendRow([
+    new Date(),
+    data.q1,
+    data.q2,
+    data.q3,
+    data.q4,
+    data.q5,
+    data.comment || '',
+    data.evalId  || '',
+    data.eventId || '',
+    data.docId   || ''
+  ]);
+
+  if (data.docId) {
+    appendEvaluationToDoc_(data);
+  }
+
+  return 'OK';
 }
 
-/**
- * รับข้อมูลจากฟอร์ม HTML และบันทึกลงชีต
- */
-function submitForm(data) {
+function appendEvaluationToDoc_(data) {
   try {
-    const sheet = getResponseSheet();
+    const doc  = DocumentApp.openById(data.docId);
+    const body = doc.getBody();
 
-    sheet.appendRow([
-      new Date(),
-      data.q1,
-      data.q2,
-      data.q3,
-      data.q4,
-      data.q5,
-      data.comment
-    ]);
+    const headingText = 'ผลการประเมินการปฏิบัติงาน';
 
-    // ส่งข้อความกลับให้ front-end เอาไปแสดงใน SweetAlert ได้
-    return 'OK';
-  } catch (e) {
-    console.error('Error in submitForm:', e);
-    throw e; // ส่ง error กลับไปให้ withFailureHandler จัดการ
+    let found = false;
+    const paras = body.getParagraphs();
+    for (var i = 0; i < paras.length; i++) {
+      if (paras[i].getText().trim() === headingText) {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      body.appendParagraph('');
+      const h = body.appendParagraph(headingText);
+      h.setHeading(DocumentApp.ParagraphHeading.HEADING2);
+    }
+
+    const lines = [
+      'ความตรงต่อเวลา: '        + (data.q1 || '-'),
+      'คุณภาพของงานโดยรวม: '    + (data.q2 || '-'),
+      'มารยาทและการสื่อสาร: '   + (data.q3 || '-'),
+      'ความรวดเร็วและความพร้อม: ' + (data.q4 || '-'),
+      'ความพึงพอใจโดยรวม: '     + (data.q5 || '-'),
+      'ข้อเสนอแนะเพิ่มเติม: '    + (data.comment || '-')
+    ];
+
+    lines.forEach(function (txt) {
+      body.appendParagraph(txt);
+    });
+
+    doc.saveAndClose();
+  } catch (err) {
+    Logger.log('appendEvaluationToDoc_ error: ' + err);
   }
 }
