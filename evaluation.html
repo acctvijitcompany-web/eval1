@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <title>แบบประเมินการทำงานของพนักงาน</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- ฟอนต์ไทย -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+      :root {
+        --orange: #ff9f43;
+        --orange-deep: #ff7f11;
+        --orange-soft: #fff4e5;
+        --green: #16a34a;
+        --bg: #fff7ec;
+        --card-radius: 26px;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Kanit", system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, #ffe9d5, #fff7ef);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem 0.75rem;
+        color: #333;
+      }
+
+      .card {
+        width: 100%;
+        max-width: 460px;
+        background: #ffffff;
+        border-radius: var(--card-radius);
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+      }
+
+      .card-header {
+        background: linear-gradient(135deg, #ffb86c, #ff9966);
+        padding: 1.1rem 1.4rem 0.9rem;
+        color: #ffffff;
+        text-align: center;
+      }
+
+      .card-header-title {
+        font-size: 1.35rem;
+        font-weight: 600;
+      }
+
+      .card-header-subtitle {
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+        opacity: 0.95;
+      }
+
+      .card-body {
+        padding: 1.2rem 1.3rem 1.4rem;
+        background: #fffdf9;
+      }
+
+      .section-title {
+        font-size: 1.05rem;
+        font-weight: 600;
+        margin-bottom: 0.15rem;
+        color: #222;
+      }
+
+      .section-subtitle {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin-bottom: 0.7rem;
+      }
+
+      .question {
+        margin-bottom: 1.05rem;
+        padding: 0.65rem 0.7rem;
+        border-radius: 18px;
+        background: #ffffff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+      }
+
+      .question-label {
+        font-size: 0.95rem;
+        margin-bottom: 0.45rem;
+        color: #333;
+        font-weight: 500;
+      }
+
+      .scale-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+      }
+
+      .scale-input {
+        display: none;
+      }
+
+      .scale-pill {
+        flex: 1;
+        min-width: 56px;
+        cursor: pointer;
+        padding: 0.35rem 0.25rem;
+        border-radius: 999px;
+        border: 1.5px solid #ffe0bd;
+        background: var(--orange-soft);
+        font-size: 0.78rem;
+        text-align: center;
+        color: #b45309;
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.16s ease;
+        user-select: none;
+      }
+
+      .scale-pill span.num {
+        font-weight: 700;
+        font-size: 0.9rem;
+      }
+
+      .scale-pill span.label {
+        font-size: 0.72rem;
+        opacity: 0.9;
+        white-space: nowrap;
+      }
+
+      /* เมื่อเลือกแล้ว -> สีส้ม นูนขึ้น */
+      .scale-input:checked + .scale-pill {
+        background: linear-gradient(135deg, var(--orange), var(--orange-deep));
+        border-color: transparent;
+        color: #fff;
+        box-shadow: 0 6px 14px rgba(255, 159, 67, 0.5);
+        transform: translateY(-1px);
+      }
+
+      .section-divider {
+        border-top: 1px dashed #f2d2ac;
+        margin: 0.9rem 0 0.95rem;
+      }
+
+      .textarea-label {
+        font-size: 0.95rem;
+        margin-bottom: 0.3rem;
+        color: #333;
+        font-weight: 500;
+      }
+
+      textarea {
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid #f2d2ac;
+        padding: 0.7rem 0.8rem;
+        font-family: inherit;
+        font-size: 0.86rem;
+        resize: vertical;
+        min-height: 4.5rem;
+        outline: none;
+        background: #fffdf8;
+        transition: border 0.16s ease, box-shadow 0.16s ease;
+      }
+
+      textarea:focus {
+        border-color: #ff9966;
+        box-shadow: 0 0 0 0.12rem rgba(255, 153, 102, 0.3);
+      }
+
+      .submit-area {
+        margin-top: 1.1rem;
+        text-align: center;
+      }
+
+      .btn-submit {
+        border: none;
+        border-radius: 999px;
+        padding: 0.7rem 2.9rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #fff;
+        background: linear-gradient(135deg, #ff9f43, #ff7f11);
+        box-shadow: 0 10px 22px rgba(255, 159, 67, 0.55);
+        cursor: pointer;
+        transition: transform 0.12s ease, box-shadow 0.12s ease,
+          filter 0.12s ease;
+      }
+
+      .btn-submit:active {
+        transform: translateY(1px);
+        box-shadow: 0 6px 14px rgba(255, 159, 67, 0.45);
+        filter: brightness(0.98);
+      }
+
+      .btn-submit.submitted {
+        background: linear-gradient(135deg, #f97316, #ea580c);
+        box-shadow: 0 12px 26px rgba(249, 115, 22, 0.65);
+      }
+
+      .footer-text {
+        margin-top: 0.8rem;
+        font-size: 0.78rem;
+        color: #b49f8c;
+        text-align: center;
+        line-height: 1.4;
+      }
+
+      .error-text {
+        color: #e11d48;
+        font-size: 0.78rem;
+        margin-top: 0.35rem;
+        text-align: center;
+        display: none;
+      }
+
+      @media (max-width: 360px) {
+        .card {
+          border-radius: 20px;
+        }
+
+        .card-header-title {
+          font-size: 1.2rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-title">แบบประเมินการทำงานของพนักงาน</div>
+        <div class="card-header-subtitle">
+          กรุณาให้คะแนนและแสดงความคิดเห็นเพิ่มเติม เพื่อช่วยให้เราพัฒนาการบริการ
+        </div>
+      </div>
+
+      <form
+        id="evaluationForm"
+        class="card-body"
+        onsubmit="return handleSubmit(event)"
+      >
+        <!-- hidden จาก template -->
+        <input type="hidden" id="evalId" name="evalId" value="<?= evalId ?>" />
+        <input
+          type="hidden"
+          id="eventId"
+          name="eventId"
+          value="<?= eventId ?>"
+        />
+        <input type="hidden" id="docId" name="docId" value="<?= docId ?>" />
+
+        <!-- ส่วนที่ 1 -->
+        <div class="section-title">ส่วนที่ 1 : การให้คะแนน</div>
+        <div class="section-subtitle">
+          ให้คะแนน 1–5 (1 = น้อยที่สุด, 5 = มากที่สุด)
+        </div>
+
+        <!-- Q1 -->
+        <div class="question">
+          <div class="question-label">1. ความตรงต่อเวลา</div>
+          <div class="scale-row">
+            <input
+              class="scale-input"
+              type="radio"
+              name="q1"
+              id="q1-1"
+              value="1"
+              required
+            />
+            <label class="scale-pill" for="q1-1">
+              <span class="num">1</span>
+              <span class="label">น้อยที่สุด</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q1"
+              id="q1-2"
+              value="2"
+            />
+            <label class="scale-pill" for="q1-2">
+              <span class="num">2</span>
+              <span class="label">น้อย</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q1"
+              id="q1-3"
+              value="3"
+            />
+            <label class="scale-pill" for="q1-3">
+              <span class="num">3</span>
+              <span class="label">ปานกลาง</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q1"
+              id="q1-4"
+              value="4"
+            />
+            <label class="scale-pill" for="q1-4">
+              <span class="num">4</span>
+              <span class="label">มาก</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q1"
+              id="q1-5"
+              value="5"
+            />
+            <label class="scale-pill" for="q1-5">
+              <span class="num">5</span>
+              <span class="label">มากที่สุด</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="question">
+          <div class="question-label">2. คุณภาพของงานโดยรวม</div>
+          <div class="scale-row">
+            <input
+              class="scale-input"
+              type="radio"
+              name="q2"
+              id="q2-1"
+              value="1"
+              required
+            />
+            <label class="scale-pill" for="q2-1">
+              <span class="num">1</span>
+              <span class="label">น้อยที่สุด</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q2"
+              id="q2-2"
+              value="2"
+            />
+            <label class="scale-pill" for="q2-2">
+              <span class="num">2</span>
+              <span class="label">น้อย</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q2"
+              id="q2-3"
+              value="3"
+            />
+            <label class="scale-pill" for="q2-3">
+              <span class="num">3</span>
+              <span class="label">ปานกลาง</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q2"
+              id="q2-4"
+              value="4"
+            />
+            <label class="scale-pill" for="q2-4">
+              <span class="num">4</span>
+              <span class="label">มาก</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q2"
+              id="q2-5"
+              value="5"
+            />
+            <label class="scale-pill" for="q2-5">
+              <span class="num">5</span>
+              <span class="label">มากที่สุด</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="question">
+          <div class="question-label">3. มารยาทและการสื่อสารของพนักงาน</div>
+          <div class="scale-row">
+            <input
+              class="scale-input"
+              type="radio"
+              name="q3"
+              id="q3-1"
+              value="1"
+              required
+            />
+            <label class="scale-pill" for="q3-1">
+              <span class="num">1</span>
+              <span class="label">น้อยที่สุด</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q3"
+              id="q3-2"
+              value="2"
+            />
+            <label class="scale-pill" for="q3-2">
+              <span class="num">2</span>
+              <span class="label">น้อย</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q3"
+              id="q3-3"
+              value="3"
+            />
+            <label class="scale-pill" for="q3-3">
+              <span class="num">3</span>
+              <span class="label">ปานกลาง</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q3"
+              id="q3-4"
+              value="4"
+            />
+            <label class="scale-pill" for="q3-4">
+              <span class="num">4</span>
+              <span class="label">มาก</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q3"
+              id="q3-5"
+              value="5"
+            />
+            <label class="scale-pill" for="q3-5">
+              <span class="num">5</span>
+              <span class="label">มากที่สุด</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="question">
+          <div class="question-label">
+            4. ความรวดเร็วและความพร้อมในการให้บริการ
+          </div>
+          <div class="scale-row">
+            <input
+              class="scale-input"
+              type="radio"
+              name="q4"
+              id="q4-1"
+              value="1"
+              required
+            />
+            <label class="scale-pill" for="q4-1">
+              <span class="num">1</span>
+              <span class="label">น้อยที่สุด</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q4"
+              id="q4-2"
+              value="2"
+            />
+            <label class="scale-pill" for="q4-2">
+              <span class="num">2</span>
+              <span class="label">น้อย</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q4"
+              id="q4-3"
+              value="3"
+            />
+            <label class="scale-pill" for="q4-3">
+              <span class="num">3</span>
+              <span class="label">ปานกลาง</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q4"
+              id="q4-4"
+              value="4"
+            />
+            <label class="scale-pill" for="q4-4">
+              <span class="num">4</span>
+              <span class="label">มาก</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q4"
+              id="q4-5"
+              value="5"
+            />
+            <label class="scale-pill" for="q4-5">
+              <span class="num">5</span>
+              <span class="label">มากที่สุด</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="question">
+          <div class="question-label">
+            5. ความพึงพอใจโดยรวมต่อการให้บริการ
+          </div>
+          <div class="scale-row">
+            <input
+              class="scale-input"
+              type="radio"
+              name="q5"
+              id="q5-1"
+              value="1"
+              required
+            />
+            <label class="scale-pill" for="q5-1">
+              <span class="num">1</span>
+              <span class="label">น้อยที่สุด</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q5"
+              id="q5-2"
+              value="2"
+            />
+            <label class="scale-pill" for="q5-2">
+              <span class="num">2</span>
+              <span class="label">น้อย</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q5"
+              id="q5-3"
+              value="3"
+            />
+            <label class="scale-pill" for="q5-3">
+              <span class="num">3</span>
+              <span class="label">ปานกลาง</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q5"
+              id="q5-4"
+              value="4"
+            />
+            <label class="scale-pill" for="q5-4">
+              <span class="num">4</span>
+              <span class="label">มาก</span>
+            </label>
+
+            <input
+              class="scale-input"
+              type="radio"
+              name="q5"
+              id="q5-5"
+              value="5"
+            />
+            <label class="scale-pill" for="q5-5">
+              <span class="num">5</span>
+              <span class="label">มากที่สุด</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- ส่วนที่ 2 -->
+        <div class="section-title">ส่วนที่ 2 : ข้อเสนอแนะเพิ่มเติม</div>
+        <div class="section-subtitle">
+          หากท่านมีข้อเสนอแนะเพิ่มเติม สามารถพิมพ์ที่นี่ได้ (ไม่บังคับ)
+        </div>
+        <textarea
+          name="comment"
+          id="comment"
+          placeholder="พิมพ์ข้อเสนอแนะของท่านได้ที่นี่..."
+        ></textarea>
+
+        <div class="submit-area">
+          <button type="submit" class="btn-submit" id="submitBtn">
+            ส่งแบบประเมิน
+          </button>
+          <div id="errorText" class="error-text">
+            กรุณาให้คะแนนในทุกข้อก่อนส่งแบบประเมิน
+          </div>
+        </div>
+
+        <div class="footer-text">
+          ขอบคุณที่สละเวลาในการประเมิน<br />
+          การประเมินของท่านมีความสำคัญกับเรามาก
+        </div>
+      </form>
+    </div>
+
+    <script>
+      function handleSubmit(event) {
+        event.preventDefault();
+        const form = document.getElementById("evaluationForm");
+        const errorText = document.getElementById("errorText");
+        const submitBtn = document.getElementById("submitBtn");
+
+        // ตรวจให้ครบทุกข้อ
+        const requiredNames = ["q1", "q2", "q3", "q4", "q5"];
+        for (let name of requiredNames) {
+          const checked = form.querySelector(`input[name="${name}"]:checked`);
+          if (!checked) {
+            errorText.style.display = "block";
+            Swal.fire({
+              icon: "warning",
+              title: "ยังให้คะแนนไม่ครบ",
+              text: "กรุณาให้คะแนนทุกข้อก่อนส่งแบบประเมินค่ะ",
+              confirmButtonColor: "#ff9966",
+            });
+            return false;
+          }
+        }
+        errorText.style.display = "none";
+
+        const data = {
+          q1: form.q1.value,
+          q2: form.q2.value,
+          q3: form.q3.value,
+          q4: form.q4.value,
+          q5: form.q5.value,
+          comment: form.comment.value || "",
+          evalId: document.getElementById("evalId").value || "",
+          eventId: document.getElementById("eventId").value || "",
+          docId: document.getElementById("docId").value || "",
+        };
+
+        // ปุ่มเปลี่ยนเป็นสถานะกำลังส่ง
+        submitBtn.disabled = true;
+
+        // SweetAlert progress %
+        Swal.fire({
+          title: "กำลังบันทึกแบบประเมิน...",
+          html: 'โปรดรอสักครู่<br><b id="evalProgress">0%</b>',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+            let p = 0;
+            const label = document.getElementById("evalProgress");
+            const timer = setInterval(() => {
+              if (p < 95) {
+                p += 5;
+                if (label) label.textContent = p + "%";
+              }
+            }, 200);
+
+            if (typeof google !== "undefined" && google.script) {
+              google.script.run
+                .withSuccessHandler((res) => {
+                  clearInterval(timer);
+                  if (label) label.textContent = "100%";
+                  Swal.close();
+
+                  submitBtn.disabled = false;
+                  submitBtn.classList.add("submitted");
+
+                  Swal.fire({
+                    icon: "success",
+                    title: "ส่งแบบประเมินสำเร็จ",
+                    text: "ขอบคุณที่ช่วยประเมินการทำงานของพนักงานค่ะ",
+                    confirmButtonColor: "#ff9966",
+                  });
+
+                  form.reset();
+                })
+                .withFailureHandler((err) => {
+                  clearInterval(timer);
+                  Swal.close();
+                  submitBtn.disabled = false;
+
+                  Swal.fire({
+                    icon: "error",
+                    title: "เกิดข้อผิดพลาด",
+                    text:
+                      "ไม่สามารถบันทึกแบบประเมินได้ กรุณาลองใหม่อีกครั้ง\n\n" +
+                      (err && err.message ? err.message : ""),
+                    confirmButtonColor: "#ff9966",
+                  });
+                })
+                .saveEvaluation(data);
+            } else {
+              // โหมดทดสอบใน browser ธรรมดา
+              console.log("Form data:", data);
+              clearInterval(timer);
+              if (label) label.textContent = "100%";
+              Swal.close();
+              submitBtn.disabled = false;
+              submitBtn.classList.add("submitted");
+
+              Swal.fire({
+                icon: "info",
+                title: "โหมดทดสอบ",
+                text:
+                  "ข้อมูลถูก log ไว้ใน console เท่านั้น (ยังไม่บันทึกลงชีตจริง)",
+                confirmButtonColor: "#ff9966",
+              });
+              form.reset();
+            }
+          },
+        });
+
+        return false;
+      }
+    </script>
+  </body>
+</html>
